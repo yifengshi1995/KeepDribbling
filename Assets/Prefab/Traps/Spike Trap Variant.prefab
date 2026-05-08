@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &4902782498993662756
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2448232643645678191, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_Name
+      value: Spike Trap Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 2448232643645678191, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076537106155469013, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2448232643645678191, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 764219374179386376}
+  m_SourcePrefab: {fileID: 100100000, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+--- !u!1 &7346479483899136331 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2448232643645678191, guid: b19bf229d5725f749bf813f3195d9f5d, type: 3}
+  m_PrefabInstance: {fileID: 4902782498993662756}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &764219374179386376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7346479483899136331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40330c35379f5954089613122753462d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isTutorial: 0
+  trapLane: 0
+  warningDistance: 15
+  collisionZThreshold: 1.2
+  destroyDelay: 1

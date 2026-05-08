@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 5b5083368c029584ca39fc9551a78807
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - roadPrefab: {fileID: 194859598683436983, guid: 7c31bb3bc868604428bf8b9cf2479060, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
