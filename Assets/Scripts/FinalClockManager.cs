@@ -16,37 +16,77 @@ public class FinalClockManager : MonoBehaviour
     public bool isRunning = false;     // 时钟是否正在运行
     private bool isViolated = false;    // 是否已经触发违例 (24秒违例)
 
+    [Header("Shot Clock 视觉（Final Shot）")]
+    [SerializeField] float displayFontSize = 78f;
+    [SerializeField] Vector2 clockRectSize = new Vector2(440f, 120f);
+    [Tooltip("倒计时进行中闪烁频率（Hz）")]
+    [SerializeField] float flashFrequency = 2.2f;
+    [Tooltip("最后 5 秒内闪烁更快")]
+    [SerializeField] float flashFrequencyUrgent = 3.8f;
+    [SerializeField] float flashAlphaMin = 0.55f;
+    [SerializeField] float flashAlphaMax = 1f;
+    [SerializeField] float scalePulseAmount = 0.07f;
+    [SerializeField] Color normalFlashColor = Color.black;
+    [SerializeField] Color urgentFlashColor = Color.black;
+
+    Vector3 _clockBaseScale = Vector3.one;
+
     void Awake()
     {
-        // 初始化单例
         instance = this;
         currentTime = startTime;
+        if (clockText != null)
+            _clockBaseScale = clockText.transform.localScale;
+        ApplyClockLayout();
     }
 
     void Update()
     {
-        // 如果时钟没启动，或者已经违例，则不执行逻辑
         if (!isRunning || isViolated) return;
 
         if (currentTime > 0)
         {
-            // 倒计时
             currentTime -= Time.deltaTime;
             UpdateUI();
 
-            // 【视觉反馈】：最后 5 秒文字变红
-            if (currentTime <= 5.0f)
-            {
-                if (clockText != null) clockText.color = Color.red;
-            }
-
-            // 【违例判定】：时间归零
             if (currentTime <= 0)
             {
                 currentTime = 0;
                 TriggerViolation();
+                return;
             }
         }
+
+        ApplyRunningClockPulse();
+    }
+
+    void ApplyClockLayout()
+    {
+        if (clockText == null) return;
+
+        clockText.fontSize = displayFontSize;
+        clockText.fontStyle = FontStyles.Bold;
+        clockText.rectTransform.sizeDelta = clockRectSize;
+        clockText.enableAutoSizing = false;
+        clockText.margin = Vector4.zero;
+    }
+
+    void ApplyRunningClockPulse()
+    {
+        if (clockText == null || !isRunning || isViolated) return;
+
+        bool urgent = currentTime <= 5f;
+        float hz = urgent ? flashFrequencyUrgent : flashFrequency;
+
+        float phase = Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+        float lerp01 = (phase + 1f) * 0.5f;
+        float alpha = Mathf.Lerp(flashAlphaMin, flashAlphaMax, lerp01);
+
+        Color baseRgb = urgent ? urgentFlashColor : normalFlashColor;
+        clockText.color = new Color(baseRgb.r, baseRgb.g, baseRgb.b, alpha);
+
+        float scaleWave = 1f + phase * scalePulseAmount;
+        clockText.transform.localScale = _clockBaseScale * scaleWave;
     }
 
     /// <summary>
@@ -70,10 +110,11 @@ public class FinalClockManager : MonoBehaviour
         currentTime = startTime;
         isRunning = true;
         isViolated = false;
+        ApplyClockLayout();
         if (clockText != null)
         {
-            clockText.color = Color.white; // 重置颜色为白色
-            UpdateUI(); // 立即显示 24.00
+            clockText.color = normalFlashColor;
+            UpdateUI();
         }
         Debug.Log("24秒进攻时间开始计时！");
     }
@@ -84,7 +125,13 @@ public class FinalClockManager : MonoBehaviour
     public void StopClock()
     {
         isRunning = false;
-        // Debug 同样输出 F2 精度
+        if (clockText != null)
+        {
+            bool urgentLook = currentTime <= 5f;
+            Color c = urgentLook ? urgentFlashColor : normalFlashColor;
+            clockText.color = new Color(c.r, c.g, c.b, 1f);
+            clockText.transform.localScale = _clockBaseScale;
+        }
         Debug.Log("球已出手，时钟定格在：" + currentTime.ToString("F2") + "秒");
     }
 
@@ -96,6 +143,11 @@ public class FinalClockManager : MonoBehaviour
         isViolated = true;
         isRunning = false;
         UpdateUI();
+        if (clockText != null)
+        {
+            clockText.color = urgentFlashColor;
+            clockText.transform.localScale = _clockBaseScale;
+        }
 
         Debug.LogError("【24秒违例】哨声响起！进攻失败。");
 

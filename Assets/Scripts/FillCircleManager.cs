@@ -16,8 +16,16 @@ public class FillCircleManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null) instance = this;
-        else Destroy(gameObject);
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+        shouldProgress = false;
+        // 场景中默认勿显示；仅在陷阱/QTE 调用 ToggleQTECursor(true) 时需要玩家反应时再出现
+        gameObject.SetActive(false);
     }
 
     void Update()

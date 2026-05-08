@@ -340,7 +340,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1002555356}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: OnClickQuit
+        m_MethodName: QuitGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -662,7 +662,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -285, y: 212}
+  m_AnchoredPosition: {x: -469, y: 320}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &193536713
@@ -694,8 +694,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4279900698
+  m_fontColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -779,6 +779,15 @@ MonoBehaviour:
   clockText: {fileID: 193536713}
   startTime: 24
   isRunning: 1
+  displayFontSize: 78
+  clockRectSize: {x: 440, y: 120}
+  flashFrequency: 2.2
+  flashFrequencyUrgent: 3.8
+  flashAlphaMin: 0.55
+  flashAlphaMax: 1
+  scalePulseAmount: 0.07
+  normalFlashColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  urgentFlashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
 --- !u!1001 &291095713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1248,7 +1257,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1002555356}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: OnClickStart
+        m_MethodName: RestartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1677,6 +1686,10 @@ MonoBehaviour:
   endingPanel: {fileID: 754265678}
   endingRankText: {fileID: 1509226425}
   endingDetailText: {fileID: 17565353}
+  endingTitleFontSize: 52
+  endingBodyFontSize: 28
+  endingDimColor: {r: 0, g: 0, b: 0, a: 0.7}
+  endingFadeSeconds: 0.85
 --- !u!1 &1117174890
 GameObject:
   m_ObjectHideFlags: 0
@@ -1921,7 +1934,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hoopCenter: {fileID: 1285796461}
   activeDefender: {fileID: 788734034}
-  feedbackText: {fileID: 193536713}
   isFinalStageActive: 1
 --- !u!114 &1190329515
 MonoBehaviour:
@@ -2653,7 +2665,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Restart
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2948,7 +2960,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Quit
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

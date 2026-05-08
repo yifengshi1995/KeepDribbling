@@ -1,5 +1,4 @@
-using UnityEngine;
-using TMPro;
+﻿using UnityEngine;
 using System.Collections;
 
 public class FinalShotManager : MonoBehaviour
@@ -9,7 +8,6 @@ public class FinalShotManager : MonoBehaviour
     [Header("引用设置")]
     public Transform hoopCenter;      // 篮筐中心点 (RimCenter)
     public Transform activeDefender;  // 防守假人 (需要挂载 FinalDefenderAI 脚本)
-    public TextMeshProUGUI feedbackText;
 
     [Header("比赛设置")]
     public bool isFinalStageActive = false;
@@ -18,6 +16,25 @@ public class FinalShotManager : MonoBehaviour
     void Awake()
     {
         instance = this;
+    }
+
+    void Start()
+    {
+        if (!isFinalStageActive) return;
+        StartCoroutine(SnapDefenderNextFrame());
+    }
+
+    IEnumerator SnapDefenderNextFrame()
+    {
+        yield return null;
+        PositionDefenderInFrontOfPlayer();
+    }
+
+    void PositionDefenderInFrontOfPlayer()
+    {
+        if (activeDefender == null) return;
+        FinalDefenderAI defenderAI = activeDefender.GetComponent<FinalDefenderAI>();
+        if (defenderAI != null) defenderAI.SnapToDefensePosition();
     }
 
     void Update()
@@ -94,8 +111,6 @@ public class FinalShotManager : MonoBehaviour
 
         // 防守干扰计算 (基于你脚下圆圈的逻辑)
         float penalty = 0f;
-        string feedback = "大空位!";
-        Color feedbackColor = Color.green;
 
         if (activeDefender != null)
         {
@@ -105,22 +120,16 @@ public class FinalShotManager : MonoBehaviour
             if (distToDefender < 8.0f)
             {
                 penalty = 0.40f;
-                feedback = "严重干扰!";
-                feedbackColor = Color.red;
             }
             else if (distToDefender < 15.0f)
             {
                 penalty = 0.15f;
-                feedback = "轻微干扰!";
-                feedbackColor = Color.yellow;
             }
         }
 
         float finalHitRate = Mathf.Clamp(baseHitRate - penalty, 0.05f, 1.0f);
         float roll = Random.Range(0f, 1f);
         bool isMake = (roll <= finalHitRate);
-
-        ShowFeedback(feedback, feedbackColor, finalHitRate);
 
         // 播放投篮动画
         Animator anim = FinalPlayerMovement.instance.GetComponentInChildren<Animator>();
@@ -175,7 +184,6 @@ public class FinalShotManager : MonoBehaviour
             }
 
             hasShot = false;
-            if (feedbackText != null) feedbackText.text = "";
 
             // 【时钟恢复】：如果球没进，且时间还没到，可以根据需求选择是否重启时钟或保持停止
             // 一般篮球规则球碰筐后时钟重置或停止，这里我们等玩家捡球即可
@@ -187,6 +195,8 @@ public class FinalShotManager : MonoBehaviour
         isFinalStageActive = true;
         hasShot = false;
 
+        PositionDefenderInFrontOfPlayer();
+
         // 【时钟联动】：关卡开始，启动 24 秒倒计时
         if (FinalClockManager.instance != null)
         {
@@ -194,12 +204,4 @@ public class FinalShotManager : MonoBehaviour
         }
     }
 
-    private void ShowFeedback(string text, Color color, float hitRate)
-    {
-        if (feedbackText != null)
-        {
-            feedbackText.color = color;
-            feedbackText.text = $"{text}\n<size=50%>命中率: {(hitRate * 100).ToString("F0")}%</size>";
-        }
-    }
 }

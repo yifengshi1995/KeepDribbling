@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FinalDefenderAI : MonoBehaviour
 {
@@ -29,14 +29,33 @@ public class FinalDefenderAI : MonoBehaviour
         HandleMovementAndAnimation();
     }
 
-    void HandleMovementAndAnimation()
+    // 篮筐→玩家方向延长线上、距玩家 defenseDistance（与移动逻辑一致）
+    public Vector3 ComputeDefenseStandPosition()
     {
-        // 1. 计算目标防守位置
-        Vector3 directionToPlayer = (player.position - hoop.position).normalized;
-        Vector3 targetPos = player.position - directionToPlayer * defenseDistance;
+        Vector3 dir = player.position - hoop.position;
+        if (dir.sqrMagnitude < 1e-8f)
+            dir = Vector3.forward;
+        else
+            dir.Normalize();
 
+        Vector3 targetPos = player.position - dir * defenseDistance;
         targetPos.y = transform.position.y;
         targetPos.x = Mathf.Clamp(targetPos.x, -xRange, xRange);
+        return targetPos;
+    }
+
+    public void SnapToDefensePosition()
+    {
+        if (player == null || hoop == null) return;
+
+        transform.position = ComputeDefenseStandPosition();
+        transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
+        currentMoveSide = "Idle";
+    }
+
+    void HandleMovementAndAnimation()
+    {
+        Vector3 targetPos = ComputeDefenseStandPosition();
 
         // 2. 计算相对于防守者自身的左右位移
         Vector3 moveDelta = targetPos - transform.position;
