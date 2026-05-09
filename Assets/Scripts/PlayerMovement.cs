@@ -51,11 +51,30 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>控制器里存在误拼写的 Trigger「Toldle」时，每帧末清零，避免残留触发器。</summary>
     private bool animatorHasToldleTrigger;
 
+    [Header("地面贴合（射线）")]
+    [Tooltip("从角色上方发射向下射线；采样当前 XZ 下的地面高度（不用每帧跟脚踝动画，避免走路震颤）")]
+    [SerializeField] float groundRaycastUpOffset = 8f;
+    [SerializeField] float groundRaycastMaxDistance = 30f;
+    [Tooltip("脚底略高于命中点")]
+    [SerializeField] float groundSkinOffset = 0.04f;
+    [Tooltip("垂直方向平滑时间（越大越不抖，但贴地略滞后）")]
+    [SerializeField] float verticalGroundSmoothTime = 0.12f;
+    [Tooltip("无法读到 Humanoid 脚骨时，用 pivot 相对地面的近似高度")]
+    [SerializeField] float fallbackPivotAboveFoot = 0.92f;
+
+    Rigidbody movementRigidbody;
+    float bindPosePivotMinusLowestFoot;
+    bool bindPoseFootOffsetCached;
+    float verticalSmoothVelocity;
+
     void Awake()
     {
         if (instance == null) instance = this;
         speed = initialSpeed;
         anim = GetComponentInChildren<Animator>();
+        movementRigidbody = GetComponent<Rigidbody>();
+        if (movementRigidbody != null)
+            movementRigidbody.sleepThreshold = 0f;
 
         if (anim != null)
         {
@@ -75,13 +94,40 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        CacheBindPosePivotFootOffset();
+    }
+
+    void CacheBindPosePivotFootOffset()
+    {
+        bindPoseFootOffsetCached = true;
+        bindPosePivotMinusLowestFoot = fallbackPivotAboveFoot;
+
+        if (anim == null || !anim.isHuman)
+            return;
+
+        anim.Rebind();
+        anim.Update(0f);
+
+        Transform lf = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
+        Transform rf = anim.GetBoneTransform(HumanBodyBones.RightFoot);
+        float footY = float.MaxValue;
+        if (lf != null)
+            footY = Mathf.Min(footY, lf.position.y);
+        if (rf != null)
+            footY = Mathf.Min(footY, rf.position.y);
+        if (footY < float.MaxValue - 1f)
+            bindPosePivotMinusLowestFoot = transform.position.y - footY;
+    }
+
     void Update()
     {
         if (anim == null) return;
 
         if (!hasLostBall)
         {
-            HandleAutoRun();
+            HandleLaneInputOnly();
 
             if (Input.anyKeyDown)
             {
@@ -93,8 +139,78 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            HandleAutoBackwardRecovery();
+            // 倒退位移在 FixedUpdate 中与刚体同步，避免穿透地面
         }
+    }
+
+    void FixedUpdate()
+    {
+        if (anim == null) return;
+
+        Vector3 p = movementRigidbody != null ? movementRigidbody.position : transform.position;
+
+        if (!hasLostBall)
+            ApplyForwardPlanar(ref p);
+        else
+            ApplyBackwardPlanar(ref p);
+
+        ApplySmoothedVerticalGround(ref p);
+
+        if (movementRigidbody != null && !movementRigidbody.isKinematic)
+        {
+            movementRigidbody.MovePosition(p);
+            Vector3 v = movementRigidbody.linearVelocity;
+            v.y = 0f;
+            movementRigidbody.linearVelocity = v;
+            movementRigidbody.angularVelocity = Vector3.zero;
+        }
+        else
+            transform.position = p;
+    }
+
+    void ApplyForwardPlanar(ref Vector3 p)
+    {
+        p += Vector3.forward * speed * Time.fixedDeltaTime;
+        float targetX = currentLane * laneWidth;
+        Vector3 lateralTarget = new Vector3(targetX, p.y, p.z);
+        p = Vector3.Lerp(p, lateralTarget, Time.fixedDeltaTime * lateralMoveSpeed);
+    }
+
+    void ApplyBackwardPlanar(ref Vector3 p)
+    {
+        float moveZ = -autoRecoverySpeed * Time.fixedDeltaTime;
+        float moveX = Input.GetAxis("Horizontal") * autoRecoverySpeed * Time.fixedDeltaTime;
+        p += new Vector3(moveX, 0f, moveZ);
+        p.x = Mathf.Clamp(p.x, -laneWidth - 1f, laneWidth + 1f);
+    }
+
+    /// <summary>
+    /// 用射线得到地面高度 + Start 时缓存的 pivot-脚距离，SmoothDamp 跟随意志高度；避免跟走路脚踝摆动。
+    /// </summary>
+    void ApplySmoothedVerticalGround(ref Vector3 p)
+    {
+        if (!bindPoseFootOffsetCached)
+            CacheBindPosePivotFootOffset();
+
+        int mask = BuildGroundSnapLayerMask();
+        Vector3 rayOrigin = new Vector3(p.x, p.y + groundRaycastUpOffset, p.z);
+        if (!Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, groundRaycastMaxDistance, mask,
+                QueryTriggerInteraction.Ignore))
+            return;
+
+        float targetPivotY = hit.point.y + groundSkinOffset + bindPosePivotMinusLowestFoot;
+        p.y = Mathf.SmoothDamp(p.y, targetPivotY, ref verticalSmoothVelocity, verticalGroundSmoothTime,
+            Mathf.Infinity, Time.fixedDeltaTime);
+    }
+
+    int BuildGroundSnapLayerMask()
+    {
+        int m = Physics.DefaultRaycastLayers;
+        m &= ~(1 << gameObject.layer);
+        int ballLayer = LayerMask.NameToLayer("Ball");
+        if (ballLayer >= 0)
+            m &= ~(1 << ballLayer);
+        return m;
     }
 
     void LateUpdate()
@@ -175,10 +291,8 @@ public class PlayerMovement : MonoBehaviour
         return false;
     }
 
-    void HandleAutoRun()
+    void HandleLaneInputOnly()
     {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
         if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {
             if (currentLane > -1) currentLane--;
@@ -187,22 +301,6 @@ public class PlayerMovement : MonoBehaviour
         {
             if (currentLane < 1) currentLane++;
         }
-
-        float targetX = currentLane * laneWidth;
-        Vector3 targetPos = new Vector3(targetX, transform.position.y, transform.position.z);
-        transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * lateralMoveSpeed);
-    }
-
-    void HandleAutoBackwardRecovery()
-    {
-        float moveZ = -autoRecoverySpeed * Time.deltaTime;
-        float moveX = Input.GetAxis("Horizontal") * autoRecoverySpeed * Time.deltaTime;
-        transform.Translate(new Vector3(moveX, 0, moveZ));
-
-        float minX = -laneWidth - 1.0f;
-        float maxX = laneWidth + 1.0f;
-        float clampedX = Mathf.Clamp(transform.position.x, minX, maxX);
-        transform.position = new Vector3(clampedX, transform.position.y, transform.position.z);
     }
 
     void TrySetRecoverTrigger()
